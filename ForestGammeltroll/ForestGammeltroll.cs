@@ -58,7 +58,7 @@ namespace ForestGammeltroll
             ConfigDescription Synced(string description, AcceptableValueBase range) =>
                 new ConfigDescription(description, range, new ConfigurationManagerAttributes { IsAdminOnly = true });
 
-            SpawnChance = Config.Bind("Spawning", "SpawnChance", 5f,
+            SpawnChance = Config.Bind("Spawning", "SpawnChance", 25f,
                 Synced("Percent chance that an open-world Troll spawning in the Black Forest becomes a Forest Gammeltroll instead. " +
                        "Troll caves and raids are never affected.",
                     new AcceptableValueRange<float>(0f, 100f)));
