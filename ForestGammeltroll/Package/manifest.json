@@ -1,8 +1,8 @@
-﻿{
+{
   "name": "ForestGammeltroll",
-  "description": "",
-  "version_number": "0.0.1",
-  "website_url": "",
+  "description": "A rare, moss-covered Gammeltroll now roams the Black Forest. It replaces some open-world Troll spawns and turns to stone on death, leaving rock you can mine for copper.",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/voxxsidus/ForestGammeltroll",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2333",
     "ValheimModding-Jotunn-2.30.2"

@@ -16,7 +16,7 @@ namespace ForestGammeltroll
     {
         public const string PluginGUID = "com.voxxsidus.forestgammeltroll";
         public const string PluginName = "ForestGammeltroll";
-        public const string PluginVersion = "0.0.1";
+        public const string PluginVersion = "1.0.0";
 
         // Use this class to add your own localization to the game
         // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
