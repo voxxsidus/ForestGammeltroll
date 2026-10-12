@@ -17,7 +17,6 @@ namespace ForestGammeltroll
 
         // Vanilla prefab names, from the Phase 1 prefab dump
         private const string BasePrefabName = "TrollFrost";
-        private const string DropsSourcePrefabName = "Troll";
 
         private static GameObject s_prefab;
         private static Vector3 s_baseScale;
@@ -31,8 +30,8 @@ namespace ForestGammeltroll
                 return;
             }
 
+            // Like the vanilla Gammeltroll, its CharacterDrop is empty: all loot comes from mining its petrified remains
             SetPetrifiedStatue(prefab.GetComponent<Character>(), PetrifiedRemains.Register());
-            CopyDrops(prefab);
 
             var config = new CreatureConfig
             {
@@ -121,34 +120,6 @@ namespace ForestGammeltroll
             {
                 Jotunn.Logger.LogWarning($"{PetrifiedRemains.VanillaStatuePrefabName} not found in {BasePrefabName} death effects; it will not turn to stone");
             }
-        }
-
-        private static void CopyDrops(GameObject prefab)
-        {
-            // Placeholder loot: the regular Troll's drop table
-            var troll = PrefabManager.Cache.GetPrefab<GameObject>(DropsSourcePrefabName);
-            var trollDrop = troll ? troll.GetComponent<CharacterDrop>() : null;
-            if (!trollDrop)
-            {
-                Jotunn.Logger.LogWarning($"No CharacterDrop on {DropsSourcePrefabName}; {PrefabName} will drop nothing");
-                return;
-            }
-
-            var drop = prefab.GetComponent<CharacterDrop>();
-            if (!drop)
-            {
-                drop = prefab.AddComponent<CharacterDrop>();
-            }
-            drop.m_drops = trollDrop.m_drops.Select(d => new CharacterDrop.Drop
-            {
-                m_prefab = d.m_prefab,
-                m_amountMin = d.m_amountMin,
-                m_amountMax = d.m_amountMax,
-                m_chance = d.m_chance,
-                m_onePerPlayer = d.m_onePerPlayer,
-                m_levelMultiplier = d.m_levelMultiplier,
-                m_dontScale = d.m_dontScale,
-            }).ToList();
         }
     }
 }
