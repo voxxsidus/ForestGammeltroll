@@ -35,6 +35,7 @@ namespace ForestGammeltroll
             // Like the vanilla Gammeltroll, its CharacterDrop is empty: all loot comes from mining its petrified remains
             var statue = PetrifiedRemains.Register();
             SetPetrifiedStatue(prefab.GetComponent<Character>(), statue);
+            RemoveStarTint(prefab);
             ForestVisuals.Apply(prefab, statue, PetrifiedRemains.Rock);
 
             var config = new CreatureConfig
@@ -93,6 +94,22 @@ namespace ForestGammeltroll
             ai.m_viewRange = ForestGammeltroll.ViewRange.Value;
             ai.m_alertRange = ForestGammeltroll.AlertRange.Value;
             ai.m_maxChaseDistance = ForestGammeltroll.MaxChaseDistance.Value;
+        }
+
+        private static void RemoveStarTint(GameObject prefab)
+        {
+            // The vanilla Gammeltroll hue-shifts its starred levels; keep starred Forest Gammeltrolls
+            // in their normal colours (Star Level System is handled in StarLevelSystemCompat)
+            foreach (var levelEffects in prefab.GetComponentsInChildren<LevelEffects>(true))
+            {
+                foreach (var setup in levelEffects.m_levelSetups)
+                {
+                    setup.m_hue = 0f;
+                    setup.m_saturation = 0f;
+                    setup.m_value = 0f;
+                    setup.m_setEmissiveColor = false;
+                }
+            }
         }
 
         private static void SetPetrifiedStatue(Character character, GameObject statue)

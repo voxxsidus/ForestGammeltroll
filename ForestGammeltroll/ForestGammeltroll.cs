@@ -10,6 +10,7 @@ namespace ForestGammeltroll
 {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     [BepInDependency(Jotunn.Main.ModGuid)]
+    [BepInDependency(StarLevelSystemCompat.PluginGUID, BepInDependency.DependencyFlags.SoftDependency)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
     internal class ForestGammeltroll : BaseUnityPlugin
     {
@@ -45,7 +46,9 @@ namespace ForestGammeltroll
             PrefabManager.OnVanillaPrefabsAvailable += OnVanillaPrefabsAvailable;
             CreatureManager.OnVanillaCreaturesAvailable += OnVanillaCreaturesAvailable;
 
-            new Harmony(PluginGUID).PatchAll();
+            var harmony = new Harmony(PluginGUID);
+            harmony.PatchAll();
+            StarLevelSystemCompat.Apply(harmony);
             CommandManager.Instance.AddConsoleCommand(new TestSpawnCommand());
 
             Jotunn.Logger.LogInfo("ForestGammeltroll has landed");
