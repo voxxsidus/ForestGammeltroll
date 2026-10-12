@@ -21,6 +21,8 @@ namespace ForestGammeltroll
         private static GameObject s_prefab;
         private static Vector3 s_baseScale;
 
+        public static GameObject Prefab => s_prefab;
+
         public static void Register()
         {
             var prefab = PrefabManager.Instance.CreateClonedPrefab(PrefabName, BasePrefabName);

@@ -21,6 +21,8 @@ namespace ForestGammeltroll
         // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
         public static CustomLocalization Localization = LocalizationManager.Instance.GetLocalization();
 
+        public static ConfigEntry<float> SpawnChance;
+        public static ConfigEntry<bool> AllowStars;
         public static ConfigEntry<float> Health;
         public static ConfigEntry<float> DamageMultiplier;
         public static ConfigEntry<float> ModelScale;
@@ -44,6 +46,7 @@ namespace ForestGammeltroll
             CreatureManager.OnVanillaCreaturesAvailable += OnVanillaCreaturesAvailable;
 
             new Harmony(PluginGUID).PatchAll();
+            CommandManager.Instance.AddConsoleCommand(new TestSpawnCommand());
 
             Jotunn.Logger.LogInfo("ForestGammeltroll has landed");
         }
@@ -54,6 +57,13 @@ namespace ForestGammeltroll
             // whichever machine owns the troll computes its damage and AI, so they must agree
             ConfigDescription Synced(string description, AcceptableValueBase range) =>
                 new ConfigDescription(description, range, new ConfigurationManagerAttributes { IsAdminOnly = true });
+
+            SpawnChance = Config.Bind("Spawning", "SpawnChance", 5f,
+                Synced("Percent chance that an open-world Troll spawning in the Black Forest becomes a Forest Gammeltroll instead. " +
+                       "Troll caves and raids are never affected.",
+                    new AcceptableValueRange<float>(0f, 100f)));
+            AllowStars = Config.Bind("Spawning", "AllowStars", true,
+                Synced("Whether swapped-in Forest Gammeltrolls can spawn with stars, using the Troll's level-up chances (up to 2 stars).", null));
 
             Health = Config.Bind("Stats", "Health", 1500f,
                 Synced("Base health (1 star). Regular Troll: 600, vanilla Gammeltroll: 3000. Applies to newly spawned trolls.",
