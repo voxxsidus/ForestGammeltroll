@@ -1,58 +1,75 @@
-# JötunnModStub
+# Forest Gammeltroll
 
-A Valheim mod stub project using [Jötunn](https://github.com/Valheim-Modding/Jotunn) including build tools and a basic Unity project stub.
-There is no actual plugin content included, just a minimum plugin class. 
+A [Valheim](https://www.valheimgame.com/) mod that adds a rare, moss-covered cousin of the Deep North's Gammeltroll to the Black Forest. Built with [BepInEx](https://github.com/BepInEx/BepInEx) and [Jötunn](https://github.com/Valheim-Modding/Jotunn).
 
-#  Setup Guide
+- A share of open-world Black Forest Troll spawns (25% by default) become a Forest Gammeltroll. Troll caves and raids are untouched.
+- 1500 health and roughly 2–2.75× a Troll's damage, with the Gammeltroll's reach, ground slams and throw attack.
+- A Black Forest look: moss instead of snow, a lichen beard, and green firs on its back. The textures are generated at runtime from Valheim's own art, so the mod ships no game assets.
+- Turns to stone on death, leaving a rock that can be mined for Stone and Copper Ore with any pickaxe.
+- Everything gameplay-related is configurable and server-synced.
 
-Please see [Jötunn Docs](https://valheim-modding.github.io/Jotunn/guides/overview.html) detailed documentation and setup.
+See the [mod README](ForestGammeltroll/README.md) for the full feature list, configuration reference and installation instructions. That file is also the Thunderstore page.
 
-### Post Build automations
+## Building from source
 
-Included in this repo is a PowerShell script `publish.ps1`.
-The script is referenced in the project file as a post-build event.
-Depending on the chosen configuration in Visual Studio the script executes the following actions.
+### Requirements
 
-### Building Debug
+- Valheim with [BepInExPack Valheim](https://thunderstore.io/c/valheim/p/denikson/BepInExPack_Valheim/) and [Jötunn](https://thunderstore.io/c/valheim/p/ValheimModding/Jotunn/) installed (directly or through a mod manager profile)
+- Visual Studio 2022 or the .NET SDK on Windows (the project targets .NET Framework 4.8)
 
-The compiled dll and a dll.mdb debug file are copied to `<ValheimDir>\BepInEx\plugins` (or the path set in MOD_DEPLOYPATH).
+### Setup
 
-### Building Release
+Create an `Environment.props` file in the repository root. It's gitignored, since the paths are machine-specific:
 
-A compressed file with the binaries is created in `<JotunnModStub>\Packages`ready for upload to ThunderStore.
-Dont forget to include your information in the manifest.json and to change the project's readme file.
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Your Valheim install -->
+    <VALHEIM_INSTALL>C:\Program Files (x86)\Steam\steamapps\common\Valheim</VALHEIM_INSTALL>
+    <!-- The BepInEx folder to build against: the game's, or a mod manager profile's -->
+    <BEPINEX_PATH>$(VALHEIM_INSTALL)\BepInEx</BEPINEX_PATH>
+    <!-- Where Debug builds are deployed -->
+    <MOD_DEPLOYPATH>$(BEPINEX_PATH)\plugins</MOD_DEPLOYPATH>
+  </PropertyGroup>
+</Project>
+```
 
-## Developing Assets with Unity
+### Build
 
-New Assets can be created with Unity and imported into Valheim using the mod.
-A Unity project is included in this repository under `<JotunnModStub>\JotunnModUnity`.
+```bash
+dotnet build ForestGammeltroll.sln -c Debug
+```
 
-### Unity Editor Setup
+A **Debug** build copies the DLL (with debug symbols) to `$(MOD_DEPLOYPATH)/ForestGammeltroll/`, ready to test in game.
 
-1. [Download](https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe) UnityHub directly from Unity or install it with the Visual Studio Installer via `Individual Components` -> `Visual Studio Tools for Unity`
-2. You will need an Unity account to register your PC and get a free licence. Create the account, login with it in Unity Hub and get your licence via `Settings` -> `Licence Management`
-3. Install Unity Editor version 2022.3.17f
-4. Compile the project. This copies all assemblies into `<JotunnModStub>\JotunnModUnity\Assets\Assemblies`. Don't open Unity yet before this step, it will remove assembly references.
-5. **Warning:** These assembly files are copyrighted material and you can theoretically get into trouble when you distribute them in your github repository. To avoid that there is a .gitignore file in the Unity project folder. Keep that when you clone or copy this repository
-6. Open Unity Hub and add the JotunnModUnity project
-7. Open the project in Unity
-8. Install the `AssetBundle Browser` package in the Unity Editor via `Window`-> `Package Manager` for easy bundle creation
+```bash
+dotnet build ForestGammeltroll.sln -c Release
+```
 
-## Debugging
+A **Release** build packages `ForestGammeltroll/bin/Release/net48/ForestGammeltroll.zip` for Thunderstore. The zip contains the DLL plus `manifest.json`, `icon.png` and the mod README from `ForestGammeltroll/Package/`.
 
-See the Wiki page [Debugging Plugins via IDE](https://github.com/Valheim-Modding/Wiki/wiki/Debugging-Plugins-via-IDE) for more information
+### Testing spawns
 
-## Actions after a game update
+With `devcommands` enabled in game, `fgt_testspawn [count]` runs regular Troll spawns through the open-world spawn path in front of you. It reports each spawn's biome and whether it became a Forest Gammeltroll. Stand in the Black Forest when you use it.
 
-When Valheim updates it is likely that parts of the assembly files change.
-If this is the case, the references to the assembly files must be renewed in Visual Studio and Unity.
+## Project layout
 
-### Prebuild actions
+| Path | Purpose |
+|---|---|
+| `ForestGammeltroll/ForestGammeltroll.cs` | Plugin entry point and configuration |
+| `ForestGammeltroll/ForestTrollCreature.cs` | Clones the Gammeltroll (`TrollFrost`) and applies stats, AI and death behaviour |
+| `ForestGammeltroll/PetrifiedRemains.cs` | The petrified statue and the copper-bearing rock it breaks into |
+| `ForestGammeltroll/ForestVisuals.cs` | Runtime-generated moss skin, green back firs, copper veins and effect swaps |
+| `ForestGammeltroll/SpawnPatches.cs` | Swaps open-world Black Forest Troll spawns |
+| `ForestGammeltroll/DamagePatches.cs` | Scales the creature's damage, including spawned shockwaves and projectiles |
+| `ForestGammeltroll/StarLevelSystemCompat.cs` | Optional Star Level System compatibility (no star tinting) |
+| `ForestGammeltroll/TestSpawnCommand.cs` | The `fgt_testspawn` debug command |
+| `ForestGammeltroll/PrefabDumper.cs` | Debug tool that dumps the Gammeltroll and Troll prefabs to a text file (`Debug.DumpPrefabs`) |
+| `ForestGammeltroll/Package/` | Thunderstore manifest, icon and README |
+| `scripts/` | Post-build deploy and packaging scripts |
+| `ForestGammeltrollUnity/` | Unity project from the mod template, for authoring asset bundles (not currently used) |
 
-1. There is a file called DoPrebuild.props included in the solution. When you set its only value to true, Jötunn will automatically generate publicized assemblies for you. Otherwise you have to do this step manually.
+## License
 
-### Unity actions
-
-1. Copy all `assembly_*.dll` from `<ValheimDir>\valheim_Data\Managed` into `<JotunnModStub>\JotunnModUnity\Assets\Assemblies`. <br />
-  **Do this directly in the filesystem - don't import the dlls in Unity**.
-2. Go to Unity Editor and press `Ctrl+R`. This reloads all files from the filesystem and "re-imports" the copied dlls into the project.
+See [LICENSE](LICENSE).
