@@ -7,8 +7,8 @@ using UnityEngine;
 namespace ForestGammeltroll
 {
     /// <summary>
-    ///     The Black Forest Gammeltroll: a clone of the vanilla Gammeltroll (TrollFrost)
-    ///     without the petrify-on-death statue and its Bloodgold drops.
+    ///     The Black Forest Gammeltroll: a clone of the vanilla Gammeltroll (TrollFrost) that
+    ///     petrifies into its own statue (see <see cref="PetrifiedRemains"/>) instead of the Bloodgold one.
     /// </summary>
     internal static class ForestTrollCreature
     {
@@ -18,7 +18,6 @@ namespace ForestGammeltroll
         // Vanilla prefab names, from the Phase 1 prefab dump
         private const string BasePrefabName = "TrollFrost";
         private const string DropsSourcePrefabName = "Troll";
-        private const string PetrifiedStatuePrefabName = "TrollFrost_Dead";
 
         private static GameObject s_prefab;
         private static Vector3 s_baseScale;
@@ -32,7 +31,7 @@ namespace ForestGammeltroll
                 return;
             }
 
-            RemovePetrifyOnDeath(prefab.GetComponent<Character>());
+            SetPetrifiedStatue(prefab.GetComponent<Character>(), PetrifiedRemains.Register());
             CopyDrops(prefab);
 
             var config = new CreatureConfig
@@ -56,6 +55,8 @@ namespace ForestGammeltroll
         /// </summary>
         public static void ApplySettings()
         {
+            PetrifiedRemains.ApplySettings();
+
             if (!s_prefab)
             {
                 return;
@@ -91,18 +92,34 @@ namespace ForestGammeltroll
             ai.m_maxChaseDistance = ForestGammeltroll.MaxChaseDistance.Value;
         }
 
-        private static void RemovePetrifyOnDeath(Character character)
+        private static void SetPetrifiedStatue(Character character, GameObject statue)
         {
-            // The vanilla death effects spawn a stone statue that breaks into a Bloodgold rock.
-            // Without it the body vanishes in the remaining smoke/pebble effects and CharacterDrop drops loot.
-            var effects = character.m_deathEffects.m_effectPrefabs;
-            character.m_deathEffects.m_effectPrefabs = effects
-                .Where(e => !e.m_prefab || e.m_prefab.name != PetrifiedStatuePrefabName)
-                .ToArray();
-
-            if (character.m_deathEffects.m_effectPrefabs.Length == effects.Length)
+            // The vanilla death effects spawn TrollFrost_Dead, a stone statue that breaks into a Bloodgold rock.
+            // Swap in our own statue; if it couldn't be created, drop the statue entirely so the body
+            // vanishes in the remaining smoke/pebble effects rather than leaving Bloodgold behind.
+            bool found = false;
+            var effects = character.m_deathEffects.m_effectPrefabs.ToList();
+            for (int i = effects.Count - 1; i >= 0; i--)
             {
-                Jotunn.Logger.LogWarning($"{PetrifiedStatuePrefabName} not found in {BasePrefabName} death effects; it may still petrify");
+                if (!effects[i].m_prefab || effects[i].m_prefab.name != PetrifiedRemains.VanillaStatuePrefabName)
+                {
+                    continue;
+                }
+                found = true;
+                if (statue)
+                {
+                    effects[i].m_prefab = statue;
+                }
+                else
+                {
+                    effects.RemoveAt(i);
+                }
+            }
+            character.m_deathEffects.m_effectPrefabs = effects.ToArray();
+
+            if (!found)
+            {
+                Jotunn.Logger.LogWarning($"{PetrifiedRemains.VanillaStatuePrefabName} not found in {BasePrefabName} death effects; it will not turn to stone");
             }
         }
 

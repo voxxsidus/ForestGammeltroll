@@ -26,6 +26,7 @@ namespace ForestGammeltroll
         public static ConfigEntry<float> ViewRange;
         public static ConfigEntry<float> AlertRange;
         public static ConfigEntry<float> MaxChaseDistance;
+        public static ConfigEntry<float> CopperOreWeight;
 
         private ConfigEntry<bool> _dumpPrefabs;
 
@@ -34,6 +35,7 @@ namespace ForestGammeltroll
             BindConfig();
 
             Localization.AddTranslation("English", ForestTrollCreature.NameToken, "Forest Gammeltroll");
+            Localization.AddTranslation("English", PetrifiedRemains.NameToken, "Petrified Forest Gammeltroll");
 
             PrefabManager.OnVanillaPrefabsAvailable += OnVanillaPrefabsAvailable;
             CreatureManager.OnVanillaCreaturesAvailable += OnVanillaCreaturesAvailable;
@@ -70,10 +72,16 @@ namespace ForestGammeltroll
                 Synced("How far from its spawn point it will chase before giving up. Regular Troll: 200, vanilla Gammeltroll: 500.",
                     new AcceptableValueRange<float>(20f, 1000f)));
 
+            CopperOreWeight = Config.Bind("Petrify", "CopperOreWeight", 0.5f,
+                Synced("Relative chance of Copper Ore vs Stone (weight 1) for each drop roll when mining the petrified remains. " +
+                       "Each of the rock's chunks rolls 2-3 times. 0.5 matches the vanilla Gammeltroll's Bloodgold ratio (~1/3 of drops). " +
+                       "Applies to remains created after the change.",
+                    new AcceptableValueRange<float>(0f, 10f)));
+
             _dumpPrefabs = Config.Bind("Debug", "DumpPrefabs", false,
                 "Write ForestGammeltroll_PrefabDump.txt to the BepInEx folder when vanilla prefabs load (main menu).");
 
-            foreach (var entry in new[] { Health, DamageMultiplier, ModelScale, ViewRange, AlertRange, MaxChaseDistance })
+            foreach (var entry in new[] { Health, DamageMultiplier, ModelScale, ViewRange, AlertRange, MaxChaseDistance, CopperOreWeight })
             {
                 entry.SettingChanged += (_, _) => ForestTrollCreature.ApplySettings();
             }
