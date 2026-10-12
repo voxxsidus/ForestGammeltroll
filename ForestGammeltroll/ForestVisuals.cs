@@ -10,7 +10,7 @@ namespace ForestGammeltroll
     ///     Turns the snowy Gammeltroll look into a Black Forest one. Textures are generated at runtime
     ///     from vanilla textures (no game art is shipped with the mod):
     ///     - skin: the white snow patches baked into frosttroll_d become Black Forest rock moss; hair becomes lichen
-    ///     - back trees: the snowy pine card in the tree atlas is replaced by the green small fir
+    ///     - back trees: the snowy fir atlas is swapped for the green small fir's, which shares its layout
     ///     - petrified rock: the Bloodgold vein material becomes the vanilla copper deposit interior
     ///     - snowy death/hit effects become their Black Forest equivalents
     /// </summary>
@@ -25,6 +25,7 @@ namespace ForestGammeltroll
         private const string CopperRockPrefabName = "rock4_copper";
         private const string CopperRockMaterialName = "rock1_copper";
         private const string CopperRockMossProperty = "_MossTex";
+        private const string NormalMapProperty = "_BumpMap";
         private const string CopperFracPrefabName = "rock4_copper_frac";
         private const string CopperVeinMaterialName = "rock_copper_internal";
 
@@ -35,14 +36,9 @@ namespace ForestGammeltroll
         };
 
         // UV rectangles (Unity UV space, origin bottom-left), measured from the meshes and atlases.
-        // The back-tree cards (Body submesh 1) sample this snowy fir in Pine_tree_snow_small_d...
-        private static readonly Rect SnowyFirCard = new Rect(23f / 64f, 0f, 21f / 64f, 44f / 64f);
-        // ...which is replaced by the middle green fir of Pine_tree_texture_small
-        private static readonly Rect GreenFirCard = new Rect(47f / 128f, 0f, 39f / 128f, 85f / 128f);
         // The Hair mesh only samples this block of frosttroll_d
         private static readonly Rect HairBlock = new Rect(0.58f, 0f, 0.42f, 0.36f);
 
-        private const int BackTreesUpscale = 4;
         private const float MossTiling = 2f;
         private const float MossGain = 1.35f;
         private const float SnowFeather = 0.27f;
@@ -77,7 +73,11 @@ namespace ForestGammeltroll
             if (backTrees && greenFir)
             {
                 var material = new Material(backTrees) { name = "ForestGammeltroll_Fir_mat" };
-                material.mainTexture = BuildBackTreesTexture(backTrees.mainTexture, greenFir.mainTexture);
+                // Pine_tree_texture_small uses the same atlas layout as the snowy one (cards on the middle fir,
+                // trunk on the log), so the textures can be swapped directly. Patching only the fir card left
+                // the adjacent snow strip bleeding onto the branch edges at lower mip levels.
+                material.mainTexture = greenFir.mainTexture;
+                material.SetTexture(NormalMapProperty, greenFir.GetTexture(NormalMapProperty));
                 replacements[BackTreesMaterialName] = material;
             }
 
@@ -172,38 +172,6 @@ namespace ForestGammeltroll
             }
 
             return CreateTexture(snowy, w, h, dst, "ForestGammeltroll_d");
-        }
-
-        private static Texture2D BuildBackTreesTexture(Texture snowySource, Texture greenSource)
-        {
-            var snowy = ReadPixels(snowySource);
-            var green = ReadPixels(greenSource);
-
-            // Upscale so the higher-resolution green fir keeps its detail
-            int w = snowy.width * BackTreesUpscale, h = snowy.height * BackTreesUpscale;
-            var dst = new Color[w * h];
-            for (int y = 0; y < h; y++)
-            {
-                for (int x = 0; x < w; x++)
-                {
-                    var uv = new Vector2((x + 0.5f) / w, (y + 0.5f) / h);
-                    if (SnowyFirCard.Contains(uv))
-                    {
-                        var local = Rect.PointToNormalized(SnowyFirCard, uv);
-                        var g = Rect.NormalizedToPoint(GreenFirCard, local);
-                        dst[y * w + x] = green.GetPixelBilinear(g.x, g.y);
-                    }
-                    else
-                    {
-                        dst[y * w + x] = snowy.GetPixelBilinear(uv.x, uv.y);
-                    }
-                }
-            }
-
-            var result = CreateTexture(snowySource, w, h, dst, "ForestGammeltroll_Fir_d");
-            Object.Destroy(snowy);
-            Object.Destroy(green);
-            return result;
         }
 
         private static void ReplaceEffects(Character character)
