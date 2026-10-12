@@ -31,7 +31,9 @@ namespace ForestGammeltroll
             }
 
             // Like the vanilla Gammeltroll, its CharacterDrop is empty: all loot comes from mining its petrified remains
-            SetPetrifiedStatue(prefab.GetComponent<Character>(), PetrifiedRemains.Register());
+            var statue = PetrifiedRemains.Register();
+            SetPetrifiedStatue(prefab.GetComponent<Character>(), statue);
+            ForestVisuals.Apply(prefab, statue, PetrifiedRemains.Rock);
 
             var config = new CreatureConfig
             {

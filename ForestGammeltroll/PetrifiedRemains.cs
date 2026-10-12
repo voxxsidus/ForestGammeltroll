@@ -23,6 +23,8 @@ namespace ForestGammeltroll
 
         private static GameObject s_statue;
         private static GameObject s_rock;
+
+        public static GameObject Rock => s_rock;
         private static int s_copperDropIndex = -1;
 
         /// <summary>

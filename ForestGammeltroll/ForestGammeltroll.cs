@@ -4,6 +4,7 @@ using HarmonyLib;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
+using UnityEngine;
 
 namespace ForestGammeltroll
 {
@@ -27,6 +28,8 @@ namespace ForestGammeltroll
         public static ConfigEntry<float> AlertRange;
         public static ConfigEntry<float> MaxChaseDistance;
         public static ConfigEntry<float> CopperOreWeight;
+        public static ConfigEntry<Color> MossTint;
+        public static ConfigEntry<float> SnowToMossThreshold;
 
         private ConfigEntry<bool> _dumpPrefabs;
 
@@ -77,6 +80,15 @@ namespace ForestGammeltroll
                        "Each of the rock's chunks rolls 2-3 times. 0.5 matches the vanilla Gammeltroll's Bloodgold ratio (~1/3 of drops). " +
                        "Applies to remains created after the change.",
                     new AcceptableValueRange<float>(0f, 10f)));
+
+            // Visual-only settings are per-client, so not synced
+            MossTint = Config.Bind("Visual", "MossTint", new Color(0.7f, 1f, 0.55f),
+                "Tint applied to the moss that replaces the snow on its skin, hair, statue and rock. Updates live.");
+            SnowToMossThreshold = Config.Bind("Visual", "SnowToMossThreshold", 0.48f,
+                new ConfigDescription("Brightness above which the skin texture counts as snow and becomes moss. Lower = more moss. Updates live.",
+                    new AcceptableValueRange<float>(0.2f, 0.9f)));
+            MossTint.SettingChanged += (_, _) => ForestVisuals.RegenerateSkin();
+            SnowToMossThreshold.SettingChanged += (_, _) => ForestVisuals.RegenerateSkin();
 
             _dumpPrefabs = Config.Bind("Debug", "DumpPrefabs", false,
                 "Write ForestGammeltroll_PrefabDump.txt to the BepInEx folder when vanilla prefabs load (main menu).");
