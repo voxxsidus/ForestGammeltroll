@@ -59,20 +59,26 @@ namespace ForestGammeltroll
                     .OrderBy(go => go.name, StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
+                // Internal prefab names don't always match display names (the Gammeltroll is not
+                // named "Gammel..."), so match on the localized display name as well
+                bool IsGammel(GameObject go) => ContainsCI(go.name, "gammel") || ContainsCI(DisplayName(go), "gammel");
+
                 var candidates = characters
-                    .Where(go => ContainsCI(go.name, "gammel") || ContainsCI(go.name, "troll"))
+                    .Where(go => IsGammel(go) || ContainsCI(go.name, "troll") || ContainsCI(DisplayName(go), "troll"))
                     .ToList();
 
-                Section(sb, "CANDIDATE PREFABS (Character prefabs with 'gammel' or 'troll' in the name)");
+                Section(sb, "CANDIDATE PREFABS (Character prefabs with 'gammel' or 'troll' in the prefab or display name)");
                 foreach (var go in candidates)
                 {
-                    sb.AppendLine($"  {go.name}  [{string.Join(", ", go.GetComponents<Component>().Where(c => c).Select(c => c.GetType().Name))}]");
+                    var character = go.GetComponent<Character>();
+                    sb.AppendLine($"  {go.name}  m_name=\"{character.m_name}\" display=\"{DisplayName(go)}\"  " +
+                                  $"[{string.Join(", ", go.GetComponents<Component>().Where(c => c).Select(c => c.GetType().Name))}]");
                 }
                 sb.AppendLine();
 
                 DumpSpawnReferences(sb);
 
-                var gammel = candidates.Where(go => ContainsCI(go.name, "gammel")).ToList();
+                var gammel = candidates.Where(IsGammel).ToList();
                 var troll = candidates.FirstOrDefault(go => go.name == "Troll");
 
                 if (gammel.Count == 0)
@@ -485,6 +491,16 @@ namespace ForestGammeltroll
         }
 
         private static string GameVersionString() => global::Version.GetVersionString();
+
+        private static string DisplayName(GameObject go)
+        {
+            var character = go.GetComponent<Character>();
+            if (!character || Localization.instance == null)
+            {
+                return "";
+            }
+            return Localization.instance.Localize(character.m_name);
+        }
 
         private static bool ContainsCI(string s, string sub) => s != null && s.IndexOf(sub, StringComparison.OrdinalIgnoreCase) >= 0;
 
