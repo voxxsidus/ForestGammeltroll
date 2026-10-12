@@ -45,15 +45,25 @@ namespace ForestGammeltroll
             }
 
             var spawn = AccessTools.Method(typeof(SpawnSystem), "Spawn");
+            int swapped = 0;
             for (int i = 0; i < count; i++)
             {
                 var offset = Random.insideUnitCircle * 10f;
                 var point = player.transform.position + player.transform.forward * 30f + new Vector3(offset.x, 0f, offset.y);
                 point.y = ZoneSystem.instance.GetGroundHeight(point) + 0.5f;
                 spawn.Invoke(spawnSystem, new object[] { troll, point, false });
+
+                var biome = Heightmap.FindBiome(point);
+                if (SpawnPatches.LastSpawnSwapped)
+                {
+                    swapped++;
+                }
+                context?.AddString($"  #{i + 1} at {point:F0} in {biome}: " +
+                                   (SpawnPatches.LastSpawnSwapped ? "Forest Gammeltroll" : "Troll") +
+                                   (biome != Heightmap.Biome.BlackForest ? " (not Black Forest, never swapped)" : ""));
             }
 
-            context?.AddString($"Ran {count} Troll spawn(s) through SpawnSystem.Spawn; see the log for swaps " +
+            context?.AddString($"Ran {count} Troll spawn(s) through SpawnSystem.Spawn: {swapped} swapped " +
                                $"(SpawnChance {ForestGammeltroll.SpawnChance.Value}%)");
         }
     }

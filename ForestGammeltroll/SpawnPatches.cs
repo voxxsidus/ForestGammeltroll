@@ -10,6 +10,9 @@ namespace ForestGammeltroll
     {
         private const string TrollPrefabName = "Troll";
 
+        /// <summary>Whether the most recent Troll spawn was swapped (read by the test command).</summary>
+        public static bool LastSpawnSwapped { get; private set; }
+
         // SpawnSystem drives open-world biome spawns only. Locations such as troll caves (TrollCave02) place
         // their trolls with CreatureSpawner instead, so they never reach this patch.
         // SpawnSystem.UpdateSpawning only runs for the zone owner, so the roll happens on exactly one machine.
@@ -18,6 +21,8 @@ namespace ForestGammeltroll
         {
             private static void Prefix(ref SpawnSystem.SpawnData critter, Vector3 spawnPoint, bool eventSpawner)
             {
+                LastSpawnSwapped = false;
+
                 // Raid events (eventSpawner) are excluded; they are not regular spawns
                 if (eventSpawner || !critter.m_prefab || critter.m_prefab.name != TrollPrefabName)
                 {
@@ -42,6 +47,7 @@ namespace ForestGammeltroll
                     swapped.m_maxLevel = 1;
                 }
                 critter = swapped;
+                LastSpawnSwapped = true;
 
                 Jotunn.Logger.LogInfo($"Spawn swap: Troll -> {variant.name} at {spawnPoint:F0} " +
                                       $"(zone {ZoneSystem.GetZone(spawnPoint)}, chance {ForestGammeltroll.SpawnChance.Value}%)");
