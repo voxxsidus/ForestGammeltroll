@@ -26,6 +26,8 @@ namespace ForestGammeltroll
         private const string CopperRockMaterialName = "rock1_copper";
         private const string CopperRockMossProperty = "_MossTex";
         private const string NormalMapProperty = "_BumpMap";
+        private const string MossAlphaProperty = "_MossAlpha";
+        private const string MossBlendProperty = "_MossBlend";
         private const string CopperFracPrefabName = "rock4_copper_frac";
         private const string CopperVeinMaterialName = "rock_copper_internal";
 
@@ -74,10 +76,14 @@ namespace ForestGammeltroll
             {
                 var material = new Material(backTrees) { name = "ForestGammeltroll_Fir_mat" };
                 // Pine_tree_texture_small uses the same atlas layout as the snowy one (cards on the middle fir,
-                // trunk on the log), so the textures can be swapped directly. Patching only the fir card left
-                // the adjacent snow strip bleeding onto the branch edges at lower mip levels.
+                // trunk on the log), so the textures can be swapped directly
                 material.mainTexture = greenFir.mainTexture;
                 material.SetTexture(NormalMapProperty, greenFir.GetTexture(NormalMapProperty));
+                // The snow on top of the branches is the vegetation shader's moss layer: enabled at full
+                // strength with no moss texture, so it falls back to white on upward-facing surfaces.
+                // Turn it off like the Black Forest fir does.
+                material.SetFloat(MossAlphaProperty, greenFir.GetFloat(MossAlphaProperty));
+                material.SetFloat(MossBlendProperty, greenFir.GetFloat(MossBlendProperty));
                 replacements[BackTreesMaterialName] = material;
             }
 
