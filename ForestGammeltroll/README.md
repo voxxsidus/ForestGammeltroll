@@ -17,7 +17,7 @@ Something old has taken root in the Black Forest.
 
 ## Configuration
 
-Settings live in `BepInEx/config/com.voxxsidus.forestgammeltroll.cfg` and can be edited in-game with [ConfigurationManager](https://thunderstore.io/c/valheim/p/shudnal/ConfigurationManager/). Gameplay settings are server-synced: on a dedicated server, the server's values apply to everyone.
+Settings live in `BepInEx/config/com.voxxsidus.forestgammeltroll.cfg` and can be edited in-game with [ConfigurationManager](https://thunderstore.io/c/valheim/p/shudnal/ConfigurationManager/). Gameplay settings are server-synced: on a dedicated server, the server's values apply to everyone. Edits to the config file also apply live, with no restart.
 
 | Section | Setting | Default | Description |
 |---|---|---|---|
@@ -54,6 +54,9 @@ Install with a mod manager (r2modman, Gale, Thunderstore Mod Manager), or manual
 With `devcommands` enabled, `fgt_testspawn [count]` pushes regular Troll spawns through the open-world spawn path in front of you, so you can check spawn settings without waiting. Stand in the Black Forest when you use it.
 
 ## Changelog
+
+### 1.0.1
+- Config file changes now apply live without a restart, and sync to connected players on a server.
 
 ### 1.0.0
 - Initial release.
