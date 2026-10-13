@@ -36,9 +36,16 @@ namespace ForestGammeltroll
 
         private ConfigEntry<bool> _dumpPrefabs;
 
+        // Kept in a field so the underlying FileSystemWatcher isn't garbage collected
+        private ConfigFileWatcher _configWatcher;
+
         private void Awake()
         {
             BindConfig();
+
+            // Reload the config when the file is edited (e.g. on a dedicated server). Events are raised on the
+            // main thread; the reload fires SettingChanged and Jotunn pushes synced values to connected clients.
+            _configWatcher = new ConfigFileWatcher(Config);
 
             Localization.AddTranslation("English", ForestTrollCreature.NameToken, "Forest Gammeltroll");
             Localization.AddTranslation("English", PetrifiedRemains.NameToken, "Petrified Forest Gammeltroll");
